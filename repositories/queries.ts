@@ -1,6 +1,6 @@
 import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
-import { collection, deleteDoc, doc, getDoc, getFirestore, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
 import { appConfig } from "../configs/appConfig.ts";
 
 const firebaseApp = initializeApp(appConfig.firebaseConfig);
@@ -42,8 +42,17 @@ const joinChallenge = async (chatId: string, userId: number, userName: string) =
 }
 
 const deleteChallenge = async (chatId: string) => {
-    const docRef = doc(db, "challenges", chatId)
-    await deleteDoc(docRef)
+    const challengesDocRef = doc(db, "challenges", chatId)
+    const datesColRef = collection(challengesDocRef, "dates")
+
+    const querySnapshot = await getDocs(datesColRef)
+    const toBeDeleted: any[] = [];
+    querySnapshot.forEach((doc) => {
+        toBeDeleted.push(deleteDoc(doc.ref));
+    });
+    Promise.all(toBeDeleted).then(() => console.log('documents deleted'))
+
+    await deleteDoc(challengesDocRef)
 }
 
 const getToday = async (chatId: string) => {
