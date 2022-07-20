@@ -6,7 +6,7 @@ import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
 import { CtxDetails } from "./utils/CtxDetails.ts";
 import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 
-const bot = new Bot(appConfig.botApiKey);
+export const bot = new Bot(appConfig.botApiKey);
 
 /* -------------------------------------------------------------------------- */
 /*                                Bot Commands                                */
