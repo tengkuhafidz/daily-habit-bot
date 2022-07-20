@@ -12,7 +12,7 @@ const getChallenge = async (chatId: string) => {
         const docSnap = await getDoc(docRef);
         return docSnap.data()
     } catch (error) {
-        console.log(error)
+        console.log("getChallenge ERROR:", error)
     }
 }
 
@@ -21,7 +21,7 @@ const saveChallenge = async (chatId: string, challengeName: string) => {
         const dbRef = doc(db, "challenges", chatId)
         await setDoc(dbRef, { name: challengeName, createdAt: new Date(), updatedAt: new Date(), participants: null });
     } catch (e) {
-        console.log(">>> e", e)
+        console.log("saveChallenge ERROR:", e)
         return null
     }
 }
@@ -37,58 +37,73 @@ const joinChallenge = async (chatId: string, userId: number, userName: string) =
 
         await updateDoc(docRef, data);
     } catch (e) {
-        console.log("ERROR ", e)
+        console.log("joinChallenge ERROR:", e)
     }
 }
 
 const deleteChallenge = async (chatId: string) => {
-    const challengesDocRef = doc(db, "challenges", chatId)
-    const datesColRef = collection(challengesDocRef, "dates")
+    try {
+        const challengesDocRef = doc(db, "challenges", chatId)
+        const datesColRef = collection(challengesDocRef, "dates")
+        const querySnapshot = await getDocs(datesColRef)
+        const toBeDeleted: any[] = [];
+        querySnapshot.forEach((doc) => {
+            toBeDeleted.push(deleteDoc(doc.ref));
+        });
+        Promise.all(toBeDeleted).then(() => console.log('documents deleted'))
 
-    const querySnapshot = await getDocs(datesColRef)
-    const toBeDeleted: any[] = [];
-    querySnapshot.forEach((doc) => {
-        toBeDeleted.push(deleteDoc(doc.ref));
-    });
-    Promise.all(toBeDeleted).then(() => console.log('documents deleted'))
-
-    await deleteDoc(challengesDocRef)
+        await deleteDoc(challengesDocRef)
+    } catch (e) {
+        console.log("deleteChallenge ERROR:", e)
+    }
 }
 
 const getToday = async (chatId: string) => {
-    const challengesDocRef = doc(db, "challenges", chatId)
-    const datesColRef = collection(challengesDocRef, "dates")
-    const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
+    try {
+        const challengesDocRef = doc(db, "challenges", chatId)
+        const datesColRef = collection(challengesDocRef, "dates")
+        const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
 
-    const docSnap = await getDoc(datesDocRef);
+        const docSnap = await getDoc(datesDocRef);
 
-    return docSnap.data()
+        return docSnap.data()
+    } catch (e) {
+        console.log("createToday ERROR:", e)
+    }
 }
 
 const createToday = async (chatId: string) => {
-    const challengesDocRef = doc(db, "challenges", chatId)
-    const datesColRef = collection(challengesDocRef, "dates")
-    const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
+    try {
+        const challengesDocRef = doc(db, "challenges", chatId)
+        const datesColRef = collection(challengesDocRef, "dates")
+        const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
 
-    const data = {
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        const data = {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }
+
+        await setDoc(datesDocRef, data, { merge: true });
+    } catch (e) {
+        console.log("createToday ERROR:", e)
     }
-
-    await setDoc(datesDocRef, data, { merge: true });
 }
 
 const setDone = async (chatId: string, userId: number) => {
-    const challengesDocRef = doc(db, "challenges", chatId)
-    const datesColRef = collection(challengesDocRef, "dates")
-    const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
+    try {
+        const challengesDocRef = doc(db, "challenges", chatId)
+        const datesColRef = collection(challengesDocRef, "dates")
+        const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
 
-    const data = {
-        [`participants.${userId}`]: true,
-        updatedAt: new Date()
+        const data = {
+            [`participants.${userId}`]: true,
+            updatedAt: new Date()
+        }
+
+        await updateDoc(datesDocRef, data, { merge: true });
+    } catch (e) {
+        console.log("setDone ERROR:", e)
     }
-
-    await updateDoc(datesDocRef, data, { merge: true });
 }
 
 export const queries = {
