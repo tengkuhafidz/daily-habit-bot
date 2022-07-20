@@ -1,7 +1,7 @@
 import { Context } from "https://deno.land/x/grammy@v1.9.0/context.ts";
+import { constructTaggedUserName } from "./constructTaggedUserName.ts";
 
 export class CtxDetails {
-
     constructor(public ctx: Context) { }
 
     public get chatId() {
@@ -13,18 +13,16 @@ export class CtxDetails {
     }
 
     public get userId() {
-        return this.ctx.update.message?.from?.id
+        return this.ctx.update.message?.from?.id.toString()
     }
 
     public get userName() {
         const firstName = this.ctx.update.message?.from?.first_name ?? ""
         const lastName = this.ctx.update.message?.from?.last_name ?? ""
-        const fullName = `${firstName}${firstName ? " " : ""}${lastName}`
-        if (fullName) {
-            return `[${firstName}${firstName ? " " : ""}${lastName}](tg://user?id=${this.userId})`
-        }
+        return `${firstName}${firstName ? " " : ""}${lastName}`
+    }
 
-        const username = this.ctx.update.message?.from?.username
-        return username
+    public get taggedUserName() {
+        return constructTaggedUserName(this.userName, this.userId!)
     }
 }

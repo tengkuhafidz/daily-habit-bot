@@ -2,6 +2,7 @@ import { Bot, Context, InlineKeyboard } from "https://deno.land/x/grammy@v1.9.0/
 import { appConfig } from "./configs/appConfig.ts";
 import { queries } from "./repositories/queries.ts";
 import { InitiateChallenge } from "./services/InitiateChallenge.ts";
+import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
 import { CtxDetails } from "./utils/CtxDetails.ts";
 
 const bot = new Bot(appConfig.botApiKey);
@@ -74,16 +75,18 @@ To start a new challenge, type /initiate`
 
     const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0
 
+    const allParticipants = hasParticipant ? currentChallenge.participants : {}
     const userAlreadyExist = hasParticipant && Object.keys(currentChallenge.participants).find(participantId => participantId === userId?.toString())
-    const allParticipantNames = hasParticipant ? Object.entries(currentChallenge.participants).map((participant) => participant[1]) : []
     if (!userAlreadyExist) {
-        allParticipantNames.push(userName)
+        allParticipants[userId!] = userName
     }
+
+
 
     const joinedText = `Awesome\\! You're in the challenge\\.
 
-Here's the current list of participants:${allParticipantNames.map(participantName => `
-\\- ${participantName}`).join('')}
+Here's the current list of participants:${Object.entries(allParticipants).map(([participantId, participantName]) => `
+\\- ${constructTaggedUserName(participantName as string, participantId)}`).join('')}
 
 *NOTE:* Once you've done the challenge for the day, simply type /done`
 
@@ -133,7 +136,7 @@ To join the challenge, type /join`
 const displayTodayStats = async (ctx: Context, allParticipants: { [key: string]: string }, usersDone?: { [key: string]: boolean }) => {
 
     const todayText = `Here's the current progress for today:${Object.entries(allParticipants).map(([participantId, participantName]) => `
-\\- ${participantName} ${usersDone?.[participantId] ? "✅" : "🔘"}`).join('')}
+\\- ${constructTaggedUserName(participantName, participantId)} ${usersDone?.[participantId] ? "✅" : "🔘"}`).join('')}
     
 *NOTE:* Once you've done the challenge for the day, simply type /done`
 
@@ -149,19 +152,23 @@ const displayTodayStats = async (ctx: Context, allParticipants: { [key: string]:
 bot.command("done", async (ctx) => {
     const ctxDetails = new CtxDetails(ctx)
     const { chatId, userId, userName } = ctxDetails
-    await queries.setDone(chatId!, userId!)
-
-    const currentChallenge = await queries.getChallenge(chatId!)
+    
     const todayRecord = await queries.getToday(chatId!)
-    const usersDone = todayRecord?.participants;
 
     if (!todayRecord) {
         await queries.createToday(chatId!)
     }
 
+    await queries.setDone(chatId!, userId!)
+
+    const usersDone = todayRecord?.participants ?? {}
+    usersDone[userId!] = true
+
     await ctx.reply(`Well done, ${userName}\\! 🎉`, {
         parse_mode: "MarkdownV2",
     });
+
+    const currentChallenge = await queries.getChallenge(chatId!)
     await displayTodayStats(ctx, currentChallenge.participants, usersDone)
 });
 

@@ -26,7 +26,7 @@ const saveChallenge = async (chatId: string, challengeName: string) => {
     }
 }
 
-const joinChallenge = async (chatId: string, userId: number, userName: string) => {
+const joinChallenge = async (chatId: string, userId: string, userName: string) => {
     try {
         const docRef = doc(db, "challenges", chatId)
 
@@ -89,7 +89,7 @@ const createToday = async (chatId: string) => {
     }
 }
 
-const setDone = async (chatId: string, userId: number) => {
+const setDone = async (chatId: string, userId: string) => {
     try {
         const challengesDocRef = doc(db, "challenges", chatId)
         const datesColRef = collection(challengesDocRef, "dates")
