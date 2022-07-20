@@ -4,7 +4,6 @@ import { queries } from "./repositories/queries.ts";
 import { InitiateChallenge } from "./services/InitiateChallenge.ts";
 import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
 import { CtxDetails } from "./utils/CtxDetails.ts";
-import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 
 export const bot = new Bot(appConfig.botApiKey);
 
@@ -138,9 +137,7 @@ To join the challenge, type /join`
 
 const displayTodayStats = async (ctx: Context, allParticipants: { [key: string]: string }, usersDone?: { [key: string]: boolean }) => {
 
-    const todayText = `🗓 *${moment().format("Do MMMM, dddd")}* 
-
-Here's the current progress for today:${Object.entries(allParticipants).map(([participantId, participantName]) => `
+    const todayText = `Here's the current progress for today:${Object.entries(allParticipants).map(([participantId, participantName]) => `
 \\- ${constructTaggedUserName(participantName, participantId)} ${usersDone?.[participantId] ? "✅" : "🔘"}`).join('')}
     
 *NOTE:* Once you've done the challenge for the day, simply type /done`
