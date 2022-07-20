@@ -4,6 +4,7 @@ import { queries } from "./repositories/queries.ts";
 import { InitiateChallenge } from "./services/InitiateChallenge.ts";
 import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
 import { CtxDetails } from "./utils/CtxDetails.ts";
+import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 
 const bot = new Bot(appConfig.botApiKey);
 
@@ -81,8 +82,6 @@ To start a new challenge, type /initiate`
         allParticipants[userId!] = userName
     }
 
-
-
     const joinedText = `Awesome\\! You're in the challenge\\.
 
 Here's the current list of participants:${Object.entries(allParticipants).map(([participantId, participantName]) => `
@@ -101,6 +100,10 @@ Here's the current list of participants:${Object.entries(allParticipants).map(([
 /* -------------------------------------------------------------------------- */
 
 bot.command("today", async (ctx) => {
+    await runToday(ctx)
+});
+
+const runToday = async (ctx:Context) => {
     const ctxDetails = new CtxDetails(ctx)
     const { chatId } = ctxDetails
 
@@ -131,11 +134,13 @@ To join the challenge, type /join`
     }
 
     await displayTodayStats(ctx, currentChallenge.participants, usersDone)
-});
+}
 
 const displayTodayStats = async (ctx: Context, allParticipants: { [key: string]: string }, usersDone?: { [key: string]: boolean }) => {
 
-    const todayText = `Here's the current progress for today:${Object.entries(allParticipants).map(([participantId, participantName]) => `
+    const todayText = `🗓 *${moment().format("Do MMMM, dddd")}* 
+
+Here's the current progress for today:${Object.entries(allParticipants).map(([participantId, participantName]) => `
 \\- ${constructTaggedUserName(participantName, participantId)} ${usersDone?.[participantId] ? "✅" : "🔘"}`).join('')}
     
 *NOTE:* Once you've done the challenge for the day, simply type /done`
@@ -152,7 +157,7 @@ const displayTodayStats = async (ctx: Context, allParticipants: { [key: string]:
 bot.command("done", async (ctx) => {
     const ctxDetails = new CtxDetails(ctx)
     const { chatId, userId, userName } = ctxDetails
-    
+
     const todayRecord = await queries.getToday(chatId!)
 
     if (!todayRecord) {
@@ -243,6 +248,4 @@ bot.on("message", async (ctx) => {
 
 });
 
-
-// Start the bot.
 bot.start();
