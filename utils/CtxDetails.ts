@@ -2,7 +2,7 @@ import { Context } from "https://deno.land/x/grammy@v1.9.0/context.ts";
 
 export class CtxDetails {
 
-    constructor(public ctx: Context) {}
+    constructor(public ctx: Context) { }
 
     public get chatId() {
         return this.ctx.update.message?.chat.id?.toString() ?? this.ctx.update.callback_query?.message?.chat.id?.toString()
@@ -17,13 +17,14 @@ export class CtxDetails {
     }
 
     public get userName() {
-        const username = this.ctx.update.message?.from?.username
-        if(username) {
-            return `@${username}`
-        }
-
         const firstName = this.ctx.update.message?.from?.first_name ?? ""
         const lastName = this.ctx.update.message?.from?.last_name ?? ""
-        return `[${firstName}${firstName ? " " : "" }${lastName}](tg://user?id=${this.userId})`
+        const fullName = `${firstName}${firstName ? " " : ""}${lastName}`
+        if (fullName) {
+            return `[${firstName}${firstName ? " " : ""}${lastName}](tg://user?id=${this.userId})`
+        }
+
+        const username = this.ctx.update.message?.from?.username
+        return username
     }
 }
