@@ -1,4 +1,4 @@
-import { config } from 'https://deno.land/x/dotenv@v1.0.1/mod.ts';
+import { config } from 'https://deno.land/std/dotenv';
 
 config({ export: true })
 
