@@ -22,8 +22,8 @@ export class CtxDetails {
             return `@${username}`
         }
 
-        const firstName = this.ctx.update.message?.from?.first_name
-        const lastName = this.ctx.update.message?.from?.last_name
-        return `${firstName}${firstName ? " " : "" }${lastName}`
+        const firstName = this.ctx.update.message?.from?.first_name ?? ""
+        const lastName = this.ctx.update.message?.from?.last_name ?? ""
+        return `[${firstName}${firstName ? " " : "" }${lastName}](tg://user?id=${this.userId})`
     }
 }
