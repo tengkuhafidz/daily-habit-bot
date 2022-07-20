@@ -1,6 +1,6 @@
 # Daily Group Habit Challenge Telegram Bot
 
-A simple bot that helps to track the completion of a habit challenge in any telegram group.
+A simple bot that tracks the completion of a habit challenge in any telegram group.
 
 To be run on Deno.
 
