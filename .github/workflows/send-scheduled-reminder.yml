@@ -5,11 +5,8 @@ on:
     - cron: "*/5 * * * *"
 jobs:
   build:
+    name: Send challenge reminder to groups
     runs-on: ubuntu-latest
     steps:
-      - name: Call reminder api 
-        uses: Satak/webrequest-action@v1.2.3
-        with:
-          # Web request URL endpoint
-          url: "https://daily-habit-bot.deno.dev/remind"
-          method: POST
+      - name: cURL request
+        run: curl -X POST -d {} https://daily-habit-bot.deno.dev/remind
