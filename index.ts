@@ -22,11 +22,8 @@ serve({
   },
   ["/remind"]: async (req) => {
     try {
-      const currHour = `${tzMoment().format("HH00")
-    }00`
-      console.log(">>>> currHour", currHour)
+      const currHour = tzMoment().format("HH00")
       const toBeReminded = await queries.getChallengesToBeReminded(currHour)
-      console.log(">>>> toBeReminded", JSON.stringify(toBeReminded, null, 2))
 
       if (!toBeReminded) {
         return new Response();
