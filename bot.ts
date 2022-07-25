@@ -117,7 +117,7 @@ To start a new challenge, type /initiate`
     }
     const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
     if (!hasParticipant) {
-        const challengeExistText = `No existing participant for the current challenge.\\.
+        const challengeExistText = `No existing participant for the current challenge\\.
 To join the challenge, type /join`
 
         await ctx.reply(challengeExistText, {

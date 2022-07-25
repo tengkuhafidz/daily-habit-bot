@@ -1,6 +1,6 @@
 import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, updateDoc, where } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
 import { appConfig } from "../configs/appConfig.ts";
 
 const firebaseApp = initializeApp(appConfig.firebaseConfig);
@@ -106,6 +106,27 @@ const setDone = async (chatId: string, userId: string) => {
     }
 }
 
+const getChallengesToBeReminded = async (reminderTime?: string) => {
+    if(!reminderTime) {
+        return
+    }
+    const colRef = collection(db, "challenges")
+    const myQuery = query(colRef, where("reminderTiming", "==", reminderTime))
+    const mySnapshot = await getDocs(myQuery);
+    const toBeReminded: any[] = []
+    mySnapshot.forEach((myDoc) => {
+        const challengeRecord = myDoc.data()
+        const challengeId = myDoc.id
+
+        toBeReminded.push({
+            ...challengeRecord,
+            chatId: challengeId
+        })
+    });
+
+    return toBeReminded
+}
+
 export const queries = {
     getChallenge,
     saveChallenge,
@@ -113,5 +134,6 @@ export const queries = {
     deleteChallenge,
     setDone,
     getToday,
-    createToday
+    createToday,
+    getChallengesToBeReminded
 }
