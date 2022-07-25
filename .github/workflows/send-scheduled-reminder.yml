@@ -15,4 +15,4 @@ jobs:
     steps:
       # Runs a single command using the runners shell
       - name: Run a one-line script
-        run: curl -X POST -d {} https://daily-habit-bot.deno.dev/remind
+        run: curl -X GET https://daily-habit-bot.deno.dev/remind
