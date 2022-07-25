@@ -1,11 +1,11 @@
 import { webhookCallback } from "https://deno.land/x/grammy@v1.9.2/mod.ts";
-import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 import { serve } from "https://deno.land/x/sift@0.5.0/mod.ts";
 // You might modify this to the correct way to import your `Bot` object.
 import { bot } from "./bot.ts";
 import { appConfig } from "./configs/appConfig.ts";
 import { queries } from "./repositories/queries.ts";
 import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
+import { tzMoment } from "./utils/tzMoment.ts";
 
 const handleUpdate = webhookCallback(bot, "std/http");
 
@@ -20,10 +20,14 @@ serve({
     }
     return new Response();
   },
-  ["/remind-group"]: async (req) => {
+  ["/remind"]: async (req) => {
     try {
-      const currHour = `${moment().hour()}00`
+      const currHour = `${tzMoment().hour()}00`
       const toBeReminded = await queries.getChallengesToBeReminded(currHour)
+
+      if (!toBeReminded) {
+        return new Response();
+      }
 
       toBeReminded.forEach(async challenge => {
         const hasParticipant = challenge.participants && Object.keys(challenge.participants)?.length > 0;

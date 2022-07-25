@@ -1,7 +1,7 @@
-import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
 import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, updateDoc, where } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
 import { appConfig } from "../configs/appConfig.ts";
+import { tzMoment } from "../utils/tzMoment.ts";
 
 const firebaseApp = initializeApp(appConfig.firebaseConfig);
 const db = getFirestore(firebaseApp);
@@ -62,7 +62,7 @@ const getToday = async (chatId: string) => {
     try {
         const challengesDocRef = doc(db, "challenges", chatId)
         const datesColRef = collection(challengesDocRef, "dates")
-        const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
+        const datesDocRef = doc(datesColRef, tzMoment().format('DDMMYYYY'))
 
         const docSnap = await getDoc(datesDocRef);
 
@@ -76,7 +76,7 @@ const createToday = async (chatId: string) => {
     try {
         const challengesDocRef = doc(db, "challenges", chatId)
         const datesColRef = collection(challengesDocRef, "dates")
-        const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
+        const datesDocRef = doc(datesColRef, tzMoment().format('DDMMYYYY'))
 
         const data = {
             createdAt: new Date(),
@@ -93,7 +93,7 @@ const setDone = async (chatId: string, userId: string) => {
     try {
         const challengesDocRef = doc(db, "challenges", chatId)
         const datesColRef = collection(challengesDocRef, "dates")
-        const datesDocRef = doc(datesColRef, moment().format('DDMMYYYY'))
+        const datesDocRef = doc(datesColRef, tzMoment().format('DDMMYYYY'))
 
         const data = {
             [`participants.${userId}`]: true,
@@ -107,7 +107,7 @@ const setDone = async (chatId: string, userId: string) => {
 }
 
 const getChallengesToBeReminded = async (reminderTime?: string) => {
-    if(!reminderTime) {
+    if (!reminderTime) {
         return
     }
     const colRef = collection(db, "challenges")

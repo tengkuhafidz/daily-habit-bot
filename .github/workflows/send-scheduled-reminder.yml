@@ -1,0 +1,16 @@
+name: Send Scheduled Reminder
+
+on:
+  schedule: # "Everyday at 12am UTC"
+    - cron: "0 * * * *"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Call reminder api 
+        uses: Satak/webrequest-action@v1.2.3
+        with:
+          # Web request URL endpoint
+          url: "https://daily-habit-bot.deno.dev/remind"
+          method: POST
