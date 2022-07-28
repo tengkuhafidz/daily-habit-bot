@@ -18,6 +18,7 @@ bot.api.setMyCommands([
     { command: "join", description: "Join the challenge" },
     { command: "done", description: "Mark challenge as done" },
     { command: "today", description: "Get today's progress" },
+    { command: "stats", description: "Get stats to date" },
     { command: "end", description: "End the current challenge" }
 ]);
 
@@ -84,7 +85,7 @@ To start a new challenge, type /initiate`
     const joinedText = `Awesome\\! You're in the challenge\\.
 
 Here's the current list of participants:${Object.entries(allParticipants).map(([participantId, participantName]) => `
-\\- ${constructTaggedUserName(participantName as string, participantId)}`).join('')}
+\\- *${participantName}*`).join('')}
 
 *NOTE:* Once you've done the challenge for the day, simply type /done`
 
@@ -102,7 +103,7 @@ bot.command("today", async (ctx) => {
     await runToday(ctx)
 });
 
-const runToday = async (ctx:Context) => {
+const runToday = async (ctx: Context) => {
     const ctxDetails = new CtxDetails(ctx)
     const { chatId } = ctxDetails
 
@@ -138,7 +139,7 @@ To join the challenge, type /join`
 const displayTodayStats = async (ctx: Context, allParticipants: { [key: string]: string }, usersDone?: { [key: string]: boolean }) => {
 
     const todayText = `Here's the current progress for today:${Object.entries(allParticipants).map(([participantId, participantName]) => `
-\\- ${constructTaggedUserName(participantName, participantId)} ${usersDone?.[participantId] ? "✅" : "🔘"}`).join('')}
+\\- ${usersDone?.[participantId] ? `*${participantName}* ✅` : `${constructTaggedUserName(participantName, participantId)} 🔘`}`).join('')}
     
 *NOTE:* Once you've done the challenge for the day, simply type /done`
 
@@ -173,6 +174,71 @@ bot.command("done", async (ctx) => {
     const currentChallenge = await queries.getChallenge(chatId!)
     await displayTodayStats(ctx, currentChallenge.participants, usersDone)
 });
+
+/* -------------------------------------------------------------------------- */
+/*                                Stats To Date                               */
+/* -------------------------------------------------------------------------- */
+
+bot.command("stats", async (ctx) => {
+    const ctxDetails = new CtxDetails(ctx)
+    const { chatId } = ctxDetails
+
+    const currentChallenge = await queries.getChallenge(chatId!)
+    if (!currentChallenge) {
+        const challengeExistText = `No existing challenge running in this group.\\.
+To start a new challenge, type /initiate`
+
+        await ctx.reply(challengeExistText, {
+            parse_mode: "MarkdownV2",
+        });
+    }
+    const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
+    if (!hasParticipant) {
+        const challengeExistText = `No existing participant for the current challenge\\.
+To join the challenge, type /join`
+
+        await ctx.reply(challengeExistText, {
+            parse_mode: "MarkdownV2",
+        });
+    }
+    const recordsToDate = await queries.getChallengeStatsToDate(chatId!)
+
+    const participants = currentChallenge?.participants;
+    const {statsByParticipantIds, fullScore} = getStats(participants, recordsToDate!)
+
+    const statsText = `Here's the stats to date:${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
+\\- ${`*${participants[participantId]}*: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
+    
+        await ctx.reply(statsText, {
+            parse_mode: "MarkdownV2",
+        });
+})
+
+interface StatsByParticipants {
+    [key: string]: number
+}
+
+const getStats = (participants: any, recordsToDate: any[]) => {
+    let fullScore = 0
+    const statsByParticipantIds: StatsByParticipants = {}
+    Object.keys(participants).forEach(participantId => {
+        statsByParticipantIds[participantId as string] = 0
+    })
+
+    recordsToDate.forEach(record => {
+        fullScore++;
+        if(record?.participants) {
+            Object.keys(record?.participants).forEach(participantId => {
+                statsByParticipantIds[participantId as string] = statsByParticipantIds[participantId as string] + 1
+            })
+        }
+    })
+
+    return {
+        statsByParticipantIds,
+        fullScore
+    }
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                End Challenge                               */

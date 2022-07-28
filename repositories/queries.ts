@@ -127,6 +127,28 @@ const getChallengesToBeReminded = async (reminderTime?: string) => {
     return toBeReminded
 }
 
+const getChallengeStatsToDate = async (chatId: string, fromDate?: any) => {
+    try {
+        const challengesDocRef = doc(db, "challenges", chatId)
+        const datesColRef = collection(challengesDocRef, "dates")
+
+        const mySnapshot = await getDocs(datesColRef);
+
+        const challengesFromDate: any[] = []
+
+        mySnapshot.forEach((myDoc) => {
+            const challengesByDate = myDoc.data()
+            challengesFromDate.push({
+                ...challengesByDate,
+            })
+        });
+
+        return challengesFromDate
+    } catch (e) {
+        console.log("createToday ERROR:", e)
+    }
+}
+
 export const queries = {
     getChallenge,
     saveChallenge,
@@ -135,5 +157,6 @@ export const queries = {
     setDone,
     getToday,
     createToday,
-    getChallengesToBeReminded
+    getChallengesToBeReminded,
+    getChallengeStatsToDate
 }
