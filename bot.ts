@@ -203,7 +203,7 @@ To join the challenge, type /join`
             parse_mode: "MarkdownV2",
         });
     }
-    const recordsToDate = await queries.getChallengeStatsToDate(chatId!, new Date(tzMoment().subtract(7, 'days').format('L')))
+    const recordsToDate = await queries.getChallengeStatsToDate(chatId!, new Date(moment().subtract(7, 'days').format('L')))
 
     const participants = currentChallenge?.participants;
     const {pastDaysRecordsByParticipants} = getPastDaysRecords(participants, recordsToDate!)
