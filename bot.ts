@@ -4,7 +4,7 @@ import { queries } from "./repositories/queries.ts";
 import { InitiateChallenge } from "./services/InitiateChallenge.ts";
 import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
 import { CtxDetails } from "./utils/CtxDetails.ts";
-import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
+import { tzMoment } from "./utils/tzMoment.ts";
 
 export const bot = new Bot(appConfig.botApiKey);
 
@@ -203,7 +203,7 @@ To join the challenge, type /join`
             parse_mode: "MarkdownV2",
         });
     }
-    const recordsToDate = await queries.getChallengeStatsToDate(chatId!, new Date(moment().subtract(7, 'days').format('L')))
+    const recordsToDate = await queries.getChallengeStatsToDate(chatId!, new Date(tzMoment().subtract(7, 'days').format('L')))
 
     const participants = currentChallenge?.participants;
     const {pastDaysRecordsByParticipants} = getPastDaysRecords(participants, recordsToDate!)
