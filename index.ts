@@ -48,7 +48,7 @@ To join the challenge, type /join`
           }
 
           const todayText = `Here's the current progress for today:${Object.entries(challenge.participants).map(([participantId, participantName]) => `
-\\- ${constructTaggedUserName(participantName as string, participantId)} ${usersDone?.[participantId] ? "✅" : "🔘"}`).join('')}
+\\- ${usersDone?.[participantId] ? `*${participantName}* ✅` : `${constructTaggedUserName(participantName as string, participantId)} 🔘`}`).join('')}
     
 *NOTE:* Once you've done the challenge for the day, simply type /done`
           const apiUrl = `https://api.telegram.org/bot${appConfig.botApiKey}/sendMessage?chat_id=${challenge.chatId}&text=${encodeURI(todayText)}&parse_mode=MarkdownV2`
