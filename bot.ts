@@ -4,7 +4,7 @@ import { queries } from "./repositories/queries.ts";
 import { InitiateChallenge } from "./services/InitiateChallenge.ts";
 import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
 import { CtxDetails } from "./utils/CtxDetails.ts";
-import { tzMoment } from "./utils/tzMoment.ts";
+import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 
 export const bot = new Bot(appConfig.botApiKey);
 
