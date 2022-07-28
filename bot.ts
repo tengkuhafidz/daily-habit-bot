@@ -4,6 +4,7 @@ import { queries } from "./repositories/queries.ts";
 import { InitiateChallenge } from "./services/InitiateChallenge.ts";
 import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
 import { CtxDetails } from "./utils/CtxDetails.ts";
+import { tzMoment } from "./utils/tzMoment.ts";
 
 export const bot = new Bot(appConfig.botApiKey);
 
@@ -18,7 +19,8 @@ bot.api.setMyCommands([
     { command: "join", description: "Join the challenge" },
     { command: "done", description: "Mark challenge as done" },
     { command: "today", description: "Get today's progress" },
-    { command: "stats", description: "Get stats to date" },
+    { command: "past7days", description: "Get records for the past 7 days" },
+    { command: "stats", description: "Get overall stats to date" },
     { command: "end", description: "End the current challenge" }
 ]);
 
@@ -176,6 +178,80 @@ bot.command("done", async (ctx) => {
 });
 
 /* -------------------------------------------------------------------------- */
+/*                                 Past 7 Days                                */
+/* -------------------------------------------------------------------------- */
+
+bot.command("past7days", async (ctx) => {
+    const ctxDetails = new CtxDetails(ctx)
+    const { chatId } = ctxDetails
+
+    const currentChallenge = await queries.getChallenge(chatId!)
+    if (!currentChallenge) {
+        const challengeExistText = `No existing challenge running in this group.\\.
+To start a new challenge, type /initiate`
+
+        await ctx.reply(challengeExistText, {
+            parse_mode: "MarkdownV2",
+        });
+    }
+    const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
+    if (!hasParticipant) {
+        const challengeExistText = `No existing participant for the current challenge\\.
+To join the challenge, type /join`
+
+        await ctx.reply(challengeExistText, {
+            parse_mode: "MarkdownV2",
+        });
+    }
+    const recordsToDate = await queries.getChallengeStatsToDate(chatId!, new Date(tzMoment().subtract(7, 'days').format('L')))
+
+    const participants = currentChallenge?.participants;
+    const {pastDaysRecordsByParticipants} = getPastDaysRecords(participants, recordsToDate!)
+
+    const statsText = `Records for the past 7 days:
+${Object.entries(pastDaysRecordsByParticipants).map(([participantId, participantRecordStreak]) => `
+${`*${participants[participantId]}* ${participantRecordStreak === "✅✅✅✅✅✅✅" ? "🔥" : "" }
+${participantRecordStreak}`}`).join('\n')}`
+    
+        await ctx.reply(statsText, {
+            parse_mode: "MarkdownV2",
+        });
+})
+
+interface PastDaysRecordsByParticipants {
+    [key: string]: string
+}
+
+const getPastDaysRecords = (participants: any, recordsToDate: any[]) => {
+    const pastDaysRecordsByParticipants: PastDaysRecordsByParticipants = {}
+    Object.keys(participants).forEach(participantId => {
+        pastDaysRecordsByParticipants[participantId as string] = ""
+    })
+
+    recordsToDate.forEach(record => {
+        if(record?.participants) {
+            Object.keys(participants).forEach(participantId => {
+                if(record?.participants?.[participantId]) {
+                    pastDaysRecordsByParticipants[participantId as string] += "✅"
+                } else {
+                    pastDaysRecordsByParticipants[participantId as string] += "🔘"
+                }
+            })
+        } else {
+            Object.keys(participants).forEach(participantId => {
+                pastDaysRecordsByParticipants[participantId as string] += "🔘"
+            })
+        }
+    })
+
+    return {
+        pastDaysRecordsByParticipants
+    }
+}
+
+
+
+/* -------------------------------------------------------------------------- */
 /*                                Stats To Date                               */
 /* -------------------------------------------------------------------------- */
 
@@ -206,7 +282,7 @@ To join the challenge, type /join`
     const participants = currentChallenge?.participants;
     const {statsByParticipantIds, fullScore} = getStats(participants, recordsToDate!)
 
-    const statsText = `Here's the stats to date:${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
+    const statsText = `Stats to date:${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
 \\- ${`*${participants[participantId]}*: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
     
         await ctx.reply(statsText, {
