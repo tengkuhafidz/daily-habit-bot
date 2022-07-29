@@ -20,7 +20,7 @@ serve({
     }
     return new Response();
   },
-  [`/remind`]: async (req, params) => {
+  [`/remind/${appConfig.botApiKey}`]: async (req, params) => {
       try {
         const currHour = tzMoment().format("HH00")
         const toBeReminded = await queries.getChallengesToBeReminded(currHour)
