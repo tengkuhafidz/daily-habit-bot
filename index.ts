@@ -57,14 +57,12 @@ To join the challenge, type /join`
 
           })
         return new Response("success");
+      } catch (err) {
+        console.error(err);
       }
-
-      return new Response("error - forbidden");
-    } catch (err) {
-      console.error(err);
     }
 
-    return new Response(req);
+    return new Response("error - forbidden");
   },
   "/": () => {
     return new Response("Hello world!");
