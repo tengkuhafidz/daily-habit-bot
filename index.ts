@@ -22,7 +22,6 @@ serve({
   },
   [`/remind/:apiKey`]: async (req, params) => {
     if (params.apiKey === appConfig.botApiKey) {
-
       try {
         const currHour = tzMoment().format("HH00")
         const toBeReminded = await queries.getChallengesToBeReminded(currHour)
