@@ -62,7 +62,7 @@ To join the challenge, type /join`
       }
     }
 
-    return new Response("error - forbidden");
+    return new Response("error - forbidden", params.apiKey);
   },
   "/": () => {
     return new Response("Hello world!");
