@@ -59,7 +59,7 @@ To join the challenge, type /join`
         return new Response("success");
       }
 
-      return new Response("error - forbidden")
+      return new Response("error - forbidden");
     } catch (err) {
       console.error(err);
     }
