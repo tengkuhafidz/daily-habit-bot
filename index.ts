@@ -20,8 +20,7 @@ serve({
     }
     return new Response();
   },
-  [`/remind/:apiKey`]: async (req, params) => {
-    if (params.apiKey === appConfig.botApiKey) {
+  [`/remind`]: async (req, params) => {
       try {
         const currHour = tzMoment().format("HH00")
         const toBeReminded = await queries.getChallengesToBeReminded(currHour)
@@ -60,9 +59,8 @@ To join the challenge, type /join`
       } catch (err) {
         console.error(err);
       }
-    }
 
-    return new Response(`error - forbidden: ${params.apiKey}`);
+    return new Response(`error - forbidden`);
   },
   "/": () => {
     return new Response("Hello world!");
