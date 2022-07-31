@@ -1,4 +1,4 @@
-import { Bot, Context, InlineKeyboard } from "https://deno.land/x/grammy@v1.9.0/mod.ts";
+import { Bot, Context, InlineKeyboard, Keyboard } from "https://deno.land/x/grammy@v1.9.0/mod.ts";
 import { appConfig } from "./configs/appConfig.ts";
 import { queries } from "./repositories/queries.ts";
 import { InitiateChallenge } from "./services/InitiateChallenge.ts";
@@ -17,6 +17,7 @@ bot.command("start", (ctx) => ctx.reply("Welcome. You can create daily habit cha
 bot.api.setMyCommands([
     { command: "initiate", description: "Start a daily habit challenge" },
     { command: "join", description: "Join the challenge" },
+    { command: "set_reminder", description: "Set time of day to be reminded about the challenge" },
     { command: "done", description: "Mark challenge as done" },
     { command: "today", description: "Get today's progress" },
     { command: "past7days", description: "Get records for the past 7 days" },
@@ -94,6 +95,39 @@ Here's the current list of participants:${Object.entries(allParticipants).map(([
     await ctx.reply(joinedText, {
         parse_mode: "MarkdownV2",
     });
+});
+
+/* -------------------------------------------------------------------------- */
+/*                                Set Reminder                                */
+/* -------------------------------------------------------------------------- */
+
+
+bot.command("set_reminder", async (ctx) => {
+    const hourKeyboard = new InlineKeyboard()
+        .text("12am").text("3am").text("6am").text("9am").row()
+        .text("12pm").text("3pm").text("6pm").text("9pm").row()
+        .text("None", "no-reminder")
+
+    await ctx.reply("What time would you like to be reminded about this challenge daily?", {
+        reply_markup: hourKeyboard,
+    });
+});
+
+const isReminderCallback = (callbackData: string) => {
+    const regexPattern = /\b((1[0-2]|0?[1-9])([ap][m]))/
+    return regexPattern.test(callbackData)
+}
+
+const setReminderTiming = async (ctx: Context, reminderTiming: string) => {
+    const {chatId} = new CtxDetails(ctx)
+    await queries.saveReminderTiming(chatId!, reminderTiming)
+    ctx.editMessageText(`Okay, I'll prompt every ${reminderTiming} daily ✊🏽`)
+}
+
+bot.callbackQuery("no-reminder", async (ctx) => {
+    const {chatId} = new CtxDetails(ctx)
+    await queries.removeReminderTiming(chatId!)
+    ctx.editMessageText("Sure, I trust you to remind each other about this challenge daily 👌🏽")
 });
 
 
@@ -206,16 +240,16 @@ To join the challenge, type /join`
     const recordsToDate = await queries.getChallengeStatsToDate(chatId!, new Date(tzMoment().subtract(7, 'days').format('L')))
 
     const participants = currentChallenge?.participants;
-    const {pastDaysRecordsByParticipants} = getPastDaysRecords(participants, recordsToDate!)
+    const { pastDaysRecordsByParticipants } = getPastDaysRecords(participants, recordsToDate!)
 
     const statsText = `Records for the past 7 days:
 ${Object.entries(pastDaysRecordsByParticipants).map(([participantId, participantRecordStreak]) => `
-${`*${participants[participantId]}* ${participantRecordStreak === "✅✅✅✅✅✅✅" ? "🔥" : "" }
+${`*${participants[participantId]}* ${participantRecordStreak === "✅✅✅✅✅✅✅" ? "🔥" : ""}
 ${participantRecordStreak}`}`).join('\n')}`
-    
-        await ctx.reply(statsText, {
-            parse_mode: "MarkdownV2",
-        });
+
+    await ctx.reply(statsText, {
+        parse_mode: "MarkdownV2",
+    });
 })
 
 interface PastDaysRecordsByParticipants {
@@ -229,9 +263,9 @@ const getPastDaysRecords = (participants: any, recordsToDate: any[]) => {
     })
 
     recordsToDate.forEach(record => {
-        if(record?.participants) {
+        if (record?.participants) {
             Object.keys(participants).forEach(participantId => {
-                if(record?.participants?.[participantId]) {
+                if (record?.participants?.[participantId]) {
                     pastDaysRecordsByParticipants[participantId as string] += "✅"
                 } else {
                     pastDaysRecordsByParticipants[participantId as string] += "🔘"
@@ -280,14 +314,14 @@ To join the challenge, type /join`
     const recordsToDate = await queries.getChallengeStatsToDate(chatId!)
 
     const participants = currentChallenge?.participants;
-    const {statsByParticipantIds, fullScore} = getStats(participants, recordsToDate!)
+    const { statsByParticipantIds, fullScore } = getStats(participants, recordsToDate!)
 
     const statsText = `Stats to date:${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
 \\- ${`*${participants[participantId]}*: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
-    
-        await ctx.reply(statsText, {
-            parse_mode: "MarkdownV2",
-        });
+
+    await ctx.reply(statsText, {
+        parse_mode: "MarkdownV2",
+    });
 })
 
 interface StatsByParticipants {
@@ -303,7 +337,7 @@ const getStats = (participants: any, recordsToDate: any[]) => {
 
     recordsToDate.forEach(record => {
         fullScore++;
-        if(record?.participants) {
+        if (record?.participants) {
             Object.keys(record?.participants).forEach(participantId => {
                 statsByParticipantIds[participantId as string] = statsByParticipantIds[participantId as string] + 1
             })
@@ -320,7 +354,6 @@ const getStats = (participants: any, recordsToDate: any[]) => {
 /*                                End Challenge                               */
 /* -------------------------------------------------------------------------- */
 
-let endPromptId: number;
 
 bot.command("end", async (ctx) => {
     const inlineKeyboard = new InlineKeyboard()
@@ -331,10 +364,9 @@ bot.command("end", async (ctx) => {
 NOTE: All your data relating to the current challenge will be deleted upon this action.
 `
 
-    const endPrompt = await ctx.reply(endPromptText, {
+    await ctx.reply(endPromptText, {
         reply_markup: inlineKeyboard,
     });
-    endPromptId = endPrompt?.message_id
 });
 
 bot.callbackQuery("confirm-delete", async (ctx) => {
@@ -377,14 +409,23 @@ bot.on("message", async (ctx) => {
             await initiateChallenge.run();
             break;
         }
-        case endPromptId: {
-            await endChallenge(ctx)
-            break;
-        }
         default:
             console.log(">>> Message ctx", JSON.stringify(ctx, null, 2))
     }
+});
 
+/* -------------------------------------------------------------------------- */
+/*                          Catch-all Callback Query                          */
+/* -------------------------------------------------------------------------- */
+
+bot.on("callback_query:data", async (ctx) => {
+    const {data} = ctx.callbackQuery
+
+    if(isReminderCallback(data)) {
+        setReminderTiming(ctx, data)
+    } 
+
+    await ctx.answerCallbackQuery(); // remove loading animation
 });
 
 bot.start();

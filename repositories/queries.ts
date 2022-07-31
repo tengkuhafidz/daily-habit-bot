@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, updateDoc, where } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
+import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, getFirestore, query, setDoc, updateDoc, where } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
 import { appConfig } from "../configs/appConfig.ts";
 import { tzMoment } from "../utils/tzMoment.ts";
 
@@ -153,6 +153,31 @@ const getChallengeStatsToDate = async (chatId: string, fromDate?: Date) => {
     }
 }
 
+const saveReminderTiming = async (chatId: string, reminderTiming: string) => {
+    try {
+        const docRef = doc(db, "challenges", chatId)
+        await updateDoc(docRef, {
+            reminderTiming,
+            updatedAt: new Date()
+        })
+    } catch (e) {
+        console.log("removeReminderTiming ERROR:", e)
+    }
+}
+
+const removeReminderTiming = async (chatId: string) => {
+    try {
+        const docRef = doc(db, "challenges", chatId)
+        await updateDoc(docRef, {
+            reminderTiming: deleteField(),
+            updatedAt: new Date()
+
+        })
+    } catch (e) {
+        console.log("removeReminderTiming ERROR:", e)
+    }
+}
+
 export const queries = {
     getChallenge,
     saveChallenge,
@@ -162,5 +187,7 @@ export const queries = {
     getToday,
     createToday,
     getChallengesToBeReminded,
-    getChallengeStatsToDate
+    getChallengeStatsToDate,
+    saveReminderTiming,
+    removeReminderTiming
 }
