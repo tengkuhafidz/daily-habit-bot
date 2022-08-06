@@ -145,7 +145,7 @@ const runToday = async (ctx: Context) => {
 
     const currentChallenge = await queries.getChallenge(chatId!)
     if (!currentChallenge) {
-        const challengeExistText = `No existing challenge running in this group.\\.
+        const challengeExistText = `No existing challenge running in this group\\.
 To start a new challenge, type /initiate`
 
         await ctx.reply(challengeExistText, {
@@ -221,7 +221,7 @@ bot.command("past7days", async (ctx) => {
 
     const currentChallenge = await queries.getChallenge(chatId!)
     if (!currentChallenge) {
-        const challengeExistText = `No existing challenge running in this group.\\.
+        const challengeExistText = `No existing challenge running in this group\\.
 To start a new challenge, type /initiate`
 
         await ctx.reply(challengeExistText, {
@@ -295,7 +295,7 @@ bot.command("stats", async (ctx) => {
 
     const currentChallenge = await queries.getChallenge(chatId!)
     if (!currentChallenge) {
-        const challengeExistText = `No existing challenge running in this group.\\.
+        const challengeExistText = `No existing challenge running in this group\\.
 To start a new challenge, type /initiate`
 
         await ctx.reply(challengeExistText, {
