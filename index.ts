@@ -58,6 +58,8 @@ To join the challenge, type /join`
     } catch (err) {
       console.error(err);
     }
+    
+    console.log("test");
 
     return new Response(`error - forbidden`);
   },
