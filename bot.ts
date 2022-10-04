@@ -49,11 +49,11 @@ bot.command("initiate", async (ctx) => {
 });
 
 const rejectNewChallenge = async (ctx: Context, existingChallengeName: string) => {
-    const challengeExistText = `This group already have an existing challenge running: *${existingChallengeName}*\\.
+    const challengeExistText = `This group already have an existing challenge running: <b>${existingChallengeName}</b>.
 To start a new challenge, end the current one with /end`
 
     await ctx.reply(challengeExistText, {
-        parse_mode: "MarkdownV2",
+        parse_mode: "HTML",
     });
 }
 
@@ -67,11 +67,11 @@ bot.command("join", async (ctx) => {
 
     const currentChallenge = await queries.getChallenge(chatId!)
     if (!currentChallenge) {
-        const challengeExistText = `No existing challenge running in this group\\.
+        const challengeExistText = `No existing challenge running in this group.
 To start a new challenge, type /initiate`
 
         await ctx.reply(challengeExistText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
 
@@ -85,15 +85,15 @@ To start a new challenge, type /initiate`
         allParticipants[userId!] = userName
     }
 
-    const joinedText = `Awesome\\! You're in the challenge\\.
+    const joinedText = `Awesome! You're in the challenge.
 
 Here's the current list of participants:${Object.entries(allParticipants).map(([participantId, participantName]) => `
-\\- *${participantName}*`).join('')}
+- <b>${participantName}</b>`).join('')}
 
-*NOTE:* Once you've done the challenge for the day, simply type /done`
+<b>NOTE:</b> Once you've done the challenge for the day, simply type /done`
 
     await ctx.reply(joinedText, {
-        parse_mode: "MarkdownV2",
+        parse_mode: "HTML",
     });
 });
 
@@ -119,13 +119,13 @@ const isReminderCallback = (callbackData: string) => {
 }
 
 const setReminderTiming = async (ctx: Context, reminderTiming: string) => {
-    const {chatId} = new CtxDetails(ctx)
+    const { chatId } = new CtxDetails(ctx)
     await queries.saveReminderTiming(chatId!, reminderTiming)
     ctx.editMessageText(`Okay, I'll prompt every ${reminderTiming} daily ✊🏽`)
 }
 
 bot.callbackQuery("no-reminder", async (ctx) => {
-    const {chatId} = new CtxDetails(ctx)
+    const { chatId } = new CtxDetails(ctx)
     await queries.removeReminderTiming(chatId!)
     ctx.editMessageText("Sure, I trust you to remind each other about this challenge daily 👌🏽")
 });
@@ -145,20 +145,20 @@ const runToday = async (ctx: Context) => {
 
     const currentChallenge = await queries.getChallenge(chatId!)
     if (!currentChallenge) {
-        const challengeExistText = `No existing challenge running in this group\\.
+        const challengeExistText = `No existing challenge running in this group.
 To start a new challenge, type /initiate`
 
         await ctx.reply(challengeExistText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
     const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
     if (!hasParticipant) {
-        const challengeExistText = `No existing participant for the current challenge\\.
+        const challengeExistText = `No existing participant for the current challenge.
 To join the challenge, type /join`
 
         await ctx.reply(challengeExistText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
 
@@ -175,12 +175,12 @@ To join the challenge, type /join`
 const displayTodayStats = async (ctx: Context, allParticipants: { [key: string]: string }, usersDone?: { [key: string]: boolean }) => {
 
     const todayText = `Here's the current progress for today:${Object.entries(allParticipants).map(([participantId, participantName]) => `
-\\- ${usersDone?.[participantId] ? `*${participantName}* ✅` : `${constructTaggedUserName(participantName, participantId)} 🔘`}`).join('')}
+- ${usersDone?.[participantId] ? `<b>${participantName}</b> ✅` : `${constructTaggedUserName(participantName, participantId)} 🔘`}`).join('')}
     
-*NOTE:* Once you've done the challenge for the day, simply type /done`
+<b>NOTE:</b> Once you've done the challenge for the day, simply type /done`
 
     await ctx.reply(todayText, {
-        parse_mode: "MarkdownV2",
+        parse_mode: "HTML",
     });
 }
 
@@ -203,8 +203,8 @@ bot.command("done", async (ctx) => {
     const usersDone = todayRecord?.participants ?? {}
     usersDone[userId!] = true
 
-    await ctx.reply(`Well done, ${userName}\\! 🎉`, {
-        parse_mode: "MarkdownV2",
+    await ctx.reply(`Well done, ${userName}! 🎉`, {
+        parse_mode: "HTML",
     });
 
     const currentChallenge = await queries.getChallenge(chatId!)
@@ -221,20 +221,20 @@ bot.command("past7days", async (ctx) => {
 
     const currentChallenge = await queries.getChallenge(chatId!)
     if (!currentChallenge) {
-        const challengeExistText = `No existing challenge running in this group\\.
+        const challengeExistText = `No existing challenge running in this group.
 To start a new challenge, type /initiate`
 
         await ctx.reply(challengeExistText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
     const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
     if (!hasParticipant) {
-        const challengeExistText = `No existing participant for the current challenge\\.
+        const challengeExistText = `No existing participant for the current challenge.
 To join the challenge, type /join`
 
         await ctx.reply(challengeExistText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
     const recordsToDate = await queries.getChallengeStatsToDate(chatId!, new Date(tzMoment().subtract(7, 'days').format('L')))
@@ -244,11 +244,11 @@ To join the challenge, type /join`
 
     const statsText = `Records for the past 7 days:
 ${Object.entries(pastDaysRecordsByParticipants).map(([participantId, participantRecordStreak]) => `
-${`*${participants[participantId]}* ${participantRecordStreak === "✅✅✅✅✅✅✅" ? "🔥" : ""}
+${`<b>${participants[participantId]}</b> ${participantRecordStreak === "✅✅✅✅✅✅✅" ? "🔥" : ""}
 ${participantRecordStreak}`}`).join('\n')}`
 
     await ctx.reply(statsText, {
-        parse_mode: "MarkdownV2",
+        parse_mode: "HTML",
     });
 })
 
@@ -295,20 +295,20 @@ bot.command("stats", async (ctx) => {
 
     const currentChallenge = await queries.getChallenge(chatId!)
     if (!currentChallenge) {
-        const challengeExistText = `No existing challenge running in this group\\.
+        const challengeExistText = `No existing challenge running in this group.
 To start a new challenge, type /initiate`
 
         await ctx.reply(challengeExistText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
     const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
     if (!hasParticipant) {
-        const challengeExistText = `No existing participant for the current challenge\\.
+        const challengeExistText = `No existing participant for the current challenge.
 To join the challenge, type /join`
 
         await ctx.reply(challengeExistText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
     const recordsToDate = await queries.getChallengeStatsToDate(chatId!)
@@ -317,10 +317,10 @@ To join the challenge, type /join`
     const { statsByParticipantIds, fullScore } = getStats(participants, recordsToDate!)
 
     const statsText = `Stats to date:${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-\\- ${`*${participants[participantId]}*: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
+\\- ${`<b>${participants[participantId]}</b>: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
-        parse_mode: "MarkdownV2",
+        parse_mode: "HTML",
     });
 })
 
@@ -419,11 +419,11 @@ bot.on("message", async (ctx) => {
 /* -------------------------------------------------------------------------- */
 
 bot.on("callback_query:data", async (ctx) => {
-    const {data} = ctx.callbackQuery
+    const { data } = ctx.callbackQuery
 
-    if(isReminderCallback(data)) {
+    if (isReminderCallback(data)) {
         setReminderTiming(ctx, data)
-    } 
+    }
 
     await ctx.answerCallbackQuery(); // remove loading animation
 });

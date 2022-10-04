@@ -22,22 +22,22 @@ export class InitiateChallenge {
     }
 
     private async rejectNewChallenge(existingChallengeName: string) {
-        const challengeExistText = `This group already have an existing challenge running: *${existingChallengeName}*\\.
+        const challengeExistText = `This group already have an existing challenge running: <b>${existingChallengeName}</b>\\.
 To start a new challenge, end the current one with /end`
 
         await this.ctx.reply(challengeExistText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
 
     private async startNewChallenge() {
         await queries.saveChallenge(this.chatId!, this.newChallengeName!)
 
-        const replyText = `Daily challenge started: *${this.newChallengeName!}*
+        const replyText = `Daily challenge started: <b>${this.newChallengeName!}</b>
 To join the challenge, type /join`
 
         await this.ctx.reply(replyText, {
-            parse_mode: "MarkdownV2",
+            parse_mode: "HTML",
         });
     }
 }
