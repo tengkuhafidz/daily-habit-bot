@@ -174,7 +174,7 @@ To join the challenge, type /join`
 }
 
 const displayTodayStats = async (ctx: Context, challenge: any, usersDone?: { [key: string]: boolean }) => {
-    const numOfDays = moment().endOf('day').diff(moment(challenge.createdAt.toDate()).endOf('day'), "days") as number + 1;
+    const numOfDays = tzMoment().endOf('day').diff(tzMoment(undefined, challenge.createdAt.toDate()).endOf('day'), "days") as number + 1;
     const challengeName = challenge.name as string;
     const allParticipants = challenge.participants as { [key: string]: string }
 
