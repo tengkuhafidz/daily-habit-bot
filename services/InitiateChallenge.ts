@@ -22,7 +22,7 @@ export class InitiateChallenge {
     }
 
     private async rejectNewChallenge(existingChallengeName: string) {
-        const challengeExistText = `This group already have an existing challenge running: <b>${existingChallengeName}</b>\\.
+        const challengeExistText = `This group already have an existing challenge running: <b>${existingChallengeName}</b>.
 To start a new challenge, end the current one with /end`
 
         await this.ctx.reply(challengeExistText, {

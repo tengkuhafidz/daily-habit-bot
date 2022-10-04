@@ -1,4 +1,5 @@
-import { Bot, Context, InlineKeyboard, Keyboard } from "https://deno.land/x/grammy@v1.9.0/mod.ts";
+import { Bot, Context, InlineKeyboard } from "https://deno.land/x/grammy@v1.9.0/mod.ts";
+import moment from "https://deno.land/x/momentjs@2.29.1-deno/mod.ts";
 import { appConfig } from "./configs/appConfig.ts";
 import { queries } from "./repositories/queries.ts";
 import { InitiateChallenge } from "./services/InitiateChallenge.ts";
@@ -85,7 +86,7 @@ To start a new challenge, type /initiate`
         allParticipants[userId!] = userName
     }
 
-    const joinedText = `Awesome! You're in the challenge.
+    const joinedText = `Awesome! You're in the challenge: <b>${currentChallenge.name}</b>
 
 Here's the current list of participants:${Object.entries(allParticipants).map(([participantId, participantName]) => `
 - <b>${participantName}</b>`).join('')}
@@ -169,12 +170,17 @@ To join the challenge, type /join`
         await queries.createToday(chatId!)
     }
 
-    await displayTodayStats(ctx, currentChallenge.participants, usersDone)
+    await displayTodayStats(ctx, currentChallenge, usersDone)
 }
 
-const displayTodayStats = async (ctx: Context, allParticipants: { [key: string]: string }, usersDone?: { [key: string]: boolean }) => {
+const displayTodayStats = async (ctx: Context, challenge: any, usersDone?: { [key: string]: boolean }) => {
+    const numOfDays = moment().startOf('day').diff(moment(challenge.createdAt.toDate()).startOf('day'), "days") as number + 1;
+    const challengeName = challenge.name as string;
+    const allParticipants = challenge.participants as { [key: string]: string }
 
-    const todayText = `Here's the current progress for today:${Object.entries(allParticipants).map(([participantId, participantName]) => `
+    const todayText = `<b>Day ${numOfDays} of ${challengeName}</b>
+    
+Here's the current progress:${Object.entries(allParticipants).map(([participantId, participantName]) => `
 - ${usersDone?.[participantId] ? `<b>${participantName}</b> ✅` : `${constructTaggedUserName(participantName, participantId)} 🔘`}`).join('')}
     
 <b>NOTE:</b> Once you've done the challenge for the day, simply type /done`
@@ -208,7 +214,7 @@ bot.command("done", async (ctx) => {
     });
 
     const currentChallenge = await queries.getChallenge(chatId!)
-    await displayTodayStats(ctx, currentChallenge.participants, usersDone)
+    await displayTodayStats(ctx, currentChallenge, usersDone)
 });
 
 /* -------------------------------------------------------------------------- */
@@ -317,7 +323,7 @@ To join the challenge, type /join`
     const { statsByParticipantIds, fullScore } = getStats(participants, recordsToDate!)
 
     const statsText = `Stats to date:${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-\\- ${`<b>${participants[participantId]}</b>: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
+- ${`<b>${participants[participantId]}</b>: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
         parse_mode: "HTML",
