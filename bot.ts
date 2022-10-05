@@ -178,7 +178,7 @@ const displayTodayStats = async (ctx: Context, challenge: any, usersDone?: { [ke
     const challengeName = challenge.name as string;
     const allParticipants = challenge.participants as { [key: string]: string }
 
-    const todayText = `<b>Day ${numOfDays} of ${challengeName}</b>
+    const todayText = `🗓 <b>Day ${numOfDays}</b> | ${challengeName}
     
 Here's the current progress:${Object.entries(allParticipants).map(([participantId, participantName]) => `
 - ${usersDone?.[participantId] ? `<b>${participantName}</b> ✅` : `${constructTaggedUserName(participantName, participantId)} 🔘`}`).join('')}
@@ -248,7 +248,7 @@ To join the challenge, type /join`
     const participants = currentChallenge?.participants;
     const { pastDaysRecordsByParticipants } = getPastDaysRecords(participants, recordsToDate!)
 
-    const statsText = `Records for the past 7 days:
+    const statsText = `📊 <b>Past 7 Days</b> | ${currentChallenge.name}
 ${Object.entries(pastDaysRecordsByParticipants).map(([participantId, participantRecordStreak]) => `
 ${`<b>${participants[participantId]}</b> ${participantRecordStreak === "✅✅✅✅✅✅✅" ? "🔥" : ""}
 ${participantRecordStreak}`}`).join('\n')}`
@@ -322,7 +322,8 @@ To join the challenge, type /join`
     const participants = currentChallenge?.participants;
     const { statsByParticipantIds, fullScore } = getStats(participants, recordsToDate!)
 
-    const statsText = `Stats to date:${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
+    const statsText = `📈 <b>Overall Stats</b> | ${currentChallenge.name}
+${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
 - ${`<b>${participants[participantId]}</b>: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
