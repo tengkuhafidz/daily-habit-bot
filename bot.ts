@@ -358,8 +358,8 @@ To join the challenge, type /join`
         });
     }
 
-    const firstDayPrevMonth = new Date(tzMoment().subtract(1, 'months').startOf('month').format('L'))
-    const lastDayPrevMonth = new Date(tzMoment().subtract(1, 'months').endOf('month').format('L'))
+    const firstDayPrevMonth = new Date(moment().subtract(1, 'months').startOf('month').format('L'))
+    const lastDayPrevMonth = new Date(moment().subtract(1, 'months').endOf('month').format('L'))
     console.log("firstDayPrevMonth", firstDayPrevMonth)
     console.log("lastDayPrevMonth", lastDayPrevMonth)
 
@@ -368,8 +368,8 @@ To join the challenge, type /join`
     const participants = currentChallenge?.participants;
     const { statsByParticipantIds } = getStats(participants, recordsPrevMonth!)
 
-    const prevMonthName = tzMoment().subtract(1, 'months').format('MMMM');
-    const daysInMonth = tzMoment().subtract(1, 'months').endOf('month').diff(tzMoment().subtract(1, 'months').startOf('month'), 'days') + 1
+    const prevMonthName = moment().subtract(1, 'months').format('MMMM');
+    const daysInMonth = moment().subtract(1, 'months').endOf('month').diff(moment().subtract(1, 'months').startOf('month'), 'days') + 1
     const statsText = `📈 <b>${prevMonthName} Stats</b> | ${currentChallenge.name}
 ${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
 - ${`<b>${participants[participantId]}</b>: ${participantScore}/${daysInMonth} ${participantScore === daysInMonth ? "🔥" : ""}`} `).join('')}`
