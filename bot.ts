@@ -22,6 +22,7 @@ bot.api.setMyCommands([
     { command: "done", description: "Mark challenge as done" },
     { command: "today", description: "Get today's progress" },
     { command: "past7days", description: "Get records for the past 7 days" },
+    { command: "last_month", description: "Get previous month's stats" },
     { command: "stats", description: "Get overall stats to date" },
     { command: "end", description: "End the current challenge" }
 ]);
@@ -243,7 +244,7 @@ To join the challenge, type /join`
             parse_mode: "HTML",
         });
     }
-    const recordsToDate = await queries.getChallengeStatsToDate(chatId!, new Date(tzMoment().subtract(7, 'days').format('L')))
+    const recordsToDate = await queries.getChallengeStats(chatId!, new Date(tzMoment().subtract(7, 'days').format('L')))
 
     const participants = currentChallenge?.participants;
     const { pastDaysRecordsByParticipants } = getPastDaysRecords(participants, recordsToDate!)
@@ -289,6 +290,94 @@ const getPastDaysRecords = (participants: any, recordsToDate: any[]) => {
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                Stats To Date                               */
+/* -------------------------------------------------------------------------- */
+
+bot.command("stats", async (ctx) => {
+    const ctxDetails = new CtxDetails(ctx)
+    const { chatId } = ctxDetails
+
+    const currentChallenge = await queries.getChallenge(chatId!)
+    if (!currentChallenge) {
+        const challengeExistText = `No existing challenge running in this group.
+To start a new challenge, type /initiate`
+
+        await ctx.reply(challengeExistText, {
+            parse_mode: "HTML",
+        });
+    }
+    const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
+    if (!hasParticipant) {
+        const challengeExistText = `No existing participant for the current challenge.
+To join the challenge, type /join`
+
+        await ctx.reply(challengeExistText, {
+            parse_mode: "HTML",
+        });
+    }
+    const recordsToDate = await queries.getChallengeStats(chatId!)
+
+    const participants = currentChallenge?.participants;
+    const { statsByParticipantIds, fullScore } = getStats(participants, recordsToDate!)
+
+    const statsText = `📈 <b>Overall Stats</b> | ${currentChallenge.name}
+${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
+- ${`<b>${participants[participantId]}</b>: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
+
+    await ctx.reply(statsText, {
+        parse_mode: "HTML",
+    });
+})
+
+
+/* -------------------------------------------------------------------------- */
+/*                     Stats For Previous Month                               */
+/* -------------------------------------------------------------------------- */
+
+bot.command("last_month", async (ctx) => {
+    const ctxDetails = new CtxDetails(ctx)
+    const { chatId } = ctxDetails
+
+    const currentChallenge = await queries.getChallenge(chatId!)
+    if (!currentChallenge) {
+        const challengeExistText = `No existing challenge running in this group.
+To start a new challenge, type /initiate`
+
+        await ctx.reply(challengeExistText, {
+            parse_mode: "HTML",
+        });
+    }
+    const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
+    if (!hasParticipant) {
+        const challengeExistText = `No existing participant for the current challenge.
+To join the challenge, type /join`
+
+        await ctx.reply(challengeExistText, {
+            parse_mode: "HTML",
+        });
+    }
+
+    const firstDayPrevMonth = new Date(tzMoment().subtract(1, 'months').startOf('month').format('L'))
+    const lastDayPrevMonth = new Date(tzMoment().subtract(1, 'months').endOf('month').format('L'))
+    console.log("firstDayPrevMonth", firstDayPrevMonth)
+    console.log("lastDayPrevMonth", lastDayPrevMonth)
+
+    const recordsPrevMonth = await queries.getChallengeStats(chatId!, firstDayPrevMonth, lastDayPrevMonth)
+    console.log("recordsPrevMonth", recordsPrevMonth)
+    const participants = currentChallenge?.participants;
+    const { statsByParticipantIds } = getStats(participants, recordsPrevMonth!)
+
+    const prevMonthName = tzMoment().subtract(1, 'months').format('MMMM');
+    const daysInMonth = tzMoment().subtract(1, 'months').endOf('month').diff(tzMoment().subtract(1, 'months').startOf('month'), 'days') + 1
+    const statsText = `📈 <b>${prevMonthName} Stats</b> | ${currentChallenge.name}
+${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
+- ${`<b>${participants[participantId]}</b>: ${participantScore}/${daysInMonth} ${participantScore === daysInMonth ? "🔥" : ""}`} `).join('')}`
+
+    await ctx.reply(statsText, {
+        parse_mode: "HTML",
+    });
+})
 
 
 /* -------------------------------------------------------------------------- */
@@ -317,7 +406,7 @@ To join the challenge, type /join`
             parse_mode: "HTML",
         });
     }
-    const recordsToDate = await queries.getChallengeStatsToDate(chatId!)
+    const recordsToDate = await queries.getChallengeStats(chatId!)
 
     const participants = currentChallenge?.participants;
     const { statsByParticipantIds, fullScore } = getStats(participants, recordsToDate!)
