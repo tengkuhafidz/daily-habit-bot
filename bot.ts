@@ -374,7 +374,7 @@ To join the challenge, type /join`
 
     const statsText = `📈 <b>Overall Stats</b> | ${currentChallenge.name}
 ${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-- ${`${participantScore === highScore ? "⭐️" : ""}<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === totalDays ? "🔥" : ""}`} `).join('')}`
+- ${`<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === highScore ? "⭐️" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
         parse_mode: "HTML",
