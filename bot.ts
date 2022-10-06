@@ -328,10 +328,10 @@ To join the challenge, type /join`
     const { statsByParticipantIds, highScore } = getStats(participants, recordsPrevMonth!)
 
     const prevMonthName = moment().subtract(1, 'months').format('MMMM');
-    const totalDays = tzMoment().endOf('day').diff(tzMoment(undefined, currentChallenge.createdAt.toDate()).endOf('day'), "days") as number + 1;
+    const daysInMonth = moment().subtract(1, 'months').endOf('month').diff(moment().subtract(1, 'months').startOf('month'), 'days') + 1
     const statsText = `📈 <b>${prevMonthName} Stats</b> | ${currentChallenge.name}
 ${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-- ${`<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === highScore ? "⭐️" : ""}`} `).join('')}`
+- ${`<b>${participants[participantId]}</b>: ${participantScore}/${daysInMonth} ${participantScore === highScore ? "⭐️" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
         parse_mode: "HTML",
