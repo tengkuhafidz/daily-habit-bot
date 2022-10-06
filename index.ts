@@ -48,7 +48,7 @@ To join the challenge, type /join`
           const todayText = `🚨 <b>Reminder</b> | ${challenge.name} 🚨
           
 Here's the current progress for today:${Object.entries(challenge.participants).map(([participantId, participantName]) => `
-- ${usersDone?.[participantId] ? `<b>${participantName}</b> ✅` : `${constructTaggedUserName(participantName as string, participantId)} 🔘`}`).join('')}
+- ${usersDone?.[participantId] ? `<b>${(participantName as string)?.trim()}</b> ✅` : `${constructTaggedUserName(participantName as string, participantId)} 🔘`}`).join('')}
     
 <b>NOTE:</b> Once you've done the challenge for the day, simply type /done`
           const apiUrl = `https://api.telegram.org/bot${appConfig.botApiKey}/sendMessage?chat_id=${challenge.chatId}&text=${encodeURI(todayText)}&parse_mode=HTML`

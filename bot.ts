@@ -90,7 +90,7 @@ To start a new challenge, type /initiate`
     const joinedText = `Awesome! You're in the challenge: <b>${currentChallenge.name}</b>
 
 Here's the current list of participants:${Object.entries(allParticipants).map(([participantId, participantName]) => `
-- <b>${participantName}</b>`).join('')}
+- <b>${(participantName as string)?.trim()}</b>`).join('')}
 
 <b>NOTE:</b> Once you've done the challenge for the day, simply type /done`
 
@@ -182,7 +182,7 @@ const displayTodayStats = async (ctx: Context, challenge: any, usersDone?: { [ke
     const todayText = `🗓 <b>Day ${numOfDays}</b> | ${challengeName}
     
 Here's the current progress:${Object.entries(allParticipants).map(([participantId, participantName]) => `
-- ${usersDone?.[participantId] ? `<b>${participantName}</b> ✅` : `${constructTaggedUserName(participantName, participantId)} 🔘`}`).join('')}
+- ${usersDone?.[participantId] ? `<b>${participantName.trim()}</b> ✅` : `${constructTaggedUserName(participantName, participantId)} 🔘`}`).join('')}
     
 <b>NOTE:</b> Once you've done the challenge for the day, simply type /done`
 
@@ -291,47 +291,6 @@ const getPastDaysRecords = (participants: any, recordsToDate: any[]) => {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                                Stats To Date                               */
-/* -------------------------------------------------------------------------- */
-
-bot.command("stats", async (ctx) => {
-    const ctxDetails = new CtxDetails(ctx)
-    const { chatId } = ctxDetails
-
-    const currentChallenge = await queries.getChallenge(chatId!)
-    if (!currentChallenge) {
-        const challengeExistText = `No existing challenge running in this group.
-To start a new challenge, type /initiate`
-
-        await ctx.reply(challengeExistText, {
-            parse_mode: "HTML",
-        });
-    }
-    const hasParticipant = currentChallenge.participants && Object.keys(currentChallenge.participants)?.length > 0;
-    if (!hasParticipant) {
-        const challengeExistText = `No existing participant for the current challenge.
-To join the challenge, type /join`
-
-        await ctx.reply(challengeExistText, {
-            parse_mode: "HTML",
-        });
-    }
-    const recordsToDate = await queries.getChallengeStats(chatId!)
-
-    const participants = currentChallenge?.participants;
-    const { statsByParticipantIds, fullScore } = getStats(participants, recordsToDate!)
-
-    const statsText = `📈 <b>Overall Stats</b> | ${currentChallenge.name}
-${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-- ${`<b>${participants[participantId]}</b>: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
-
-    await ctx.reply(statsText, {
-        parse_mode: "HTML",
-    });
-})
-
-
-/* -------------------------------------------------------------------------- */
 /*                     Stats For Previous Month                               */
 /* -------------------------------------------------------------------------- */
 
@@ -409,11 +368,13 @@ To join the challenge, type /join`
     const recordsToDate = await queries.getChallengeStats(chatId!)
 
     const participants = currentChallenge?.participants;
-    const { statsByParticipantIds, fullScore } = getStats(participants, recordsToDate!)
+    const { statsByParticipantIds, highScore } = getStats(participants, recordsToDate!)
+
+    const totalDays = tzMoment().endOf('day').diff(tzMoment(undefined, currentChallenge.createdAt.toDate()).endOf('day'), "days") as number + 1;
 
     const statsText = `📈 <b>Overall Stats</b> | ${currentChallenge.name}
 ${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-- ${`<b>${participants[participantId]}</b>: ${participantScore}/${fullScore} ${participantScore === fullScore ? "🔥" : ""}`} `).join('')}`
+- ${`<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === highScore ? "🌟" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
         parse_mode: "HTML",
@@ -425,14 +386,12 @@ interface StatsByParticipants {
 }
 
 const getStats = (participants: any, recordsToDate: any[]) => {
-    let fullScore = 0
     const statsByParticipantIds: StatsByParticipants = {}
     Object.keys(participants).forEach(participantId => {
         statsByParticipantIds[participantId as string] = 0
     })
 
     recordsToDate.forEach(record => {
-        fullScore++;
         if (record?.participants) {
             Object.keys(record?.participants).forEach(participantId => {
                 statsByParticipantIds[participantId as string] = statsByParticipantIds[participantId as string] + 1
@@ -440,9 +399,16 @@ const getStats = (participants: any, recordsToDate: any[]) => {
         }
     })
 
+    let highScore = 0
+    Object.values(statsByParticipantIds).forEach(score => {
+        if (score > highScore) {
+            highScore = score
+        }
+    })
+
     return {
         statsByParticipantIds,
-        fullScore
+        highScore
     }
 }
 
