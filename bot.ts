@@ -325,13 +325,13 @@ To join the challenge, type /join`
     const recordsPrevMonth = await queries.getChallengeStats(chatId!, firstDayPrevMonth, lastDayPrevMonth)
     console.log("recordsPrevMonth", recordsPrevMonth)
     const participants = currentChallenge?.participants;
-    const { statsByParticipantIds } = getStats(participants, recordsPrevMonth!)
+    const { statsByParticipantIds, highScore } = getStats(participants, recordsPrevMonth!)
 
     const prevMonthName = moment().subtract(1, 'months').format('MMMM');
-    const daysInMonth = moment().subtract(1, 'months').endOf('month').diff(moment().subtract(1, 'months').startOf('month'), 'days') + 1
+    const totalDays = tzMoment().endOf('day').diff(tzMoment(undefined, currentChallenge.createdAt.toDate()).endOf('day'), "days") as number + 1;
     const statsText = `📈 <b>${prevMonthName} Stats</b> | ${currentChallenge.name}
 ${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-- ${`<b>${participants[participantId]}</b>: ${participantScore}/${daysInMonth} ${participantScore === daysInMonth ? "🔥" : ""}`} `).join('')}`
+- ${`${participantScore === highScore ? "⭐️" : ""}<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === totalDays ? "🔥" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
         parse_mode: "HTML",
@@ -374,7 +374,7 @@ To join the challenge, type /join`
 
     const statsText = `📈 <b>Overall Stats</b> | ${currentChallenge.name}
 ${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-- ${`<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === highScore ? "⭐️" : ""}`} `).join('')}`
+- ${`${participantScore === highScore ? "⭐️" : ""}<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === totalDays ? "🔥" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
         parse_mode: "HTML",
