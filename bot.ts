@@ -244,7 +244,7 @@ To join the challenge, type /join`
             parse_mode: "HTML",
         });
     }
-    const recordsToDate = await queries.getChallengeStats(chatId!, new Date(tzMoment().subtract(7, 'days').format('L')))
+    const recordsToDate = await queries.getChallengeStats(chatId!, new Date(moment().subtract(7, 'days').startOf('day').utcOffset(8).format('L')))
 
     const participants = currentChallenge?.participants;
     const { pastDaysRecordsByParticipants } = getPastDaysRecords(participants, recordsToDate!)
@@ -358,8 +358,8 @@ To join the challenge, type /join`
         });
     }
 
-    const firstDayPrevMonth = new Date(moment().subtract(1, 'months').startOf('month').format('L'))
-    const lastDayPrevMonth = new Date(moment().subtract(1, 'months').endOf('month').format('L'))
+    const firstDayPrevMonth = new Date(moment().subtract(1, 'months').startOf('month').utcOffset(8).format('L'))
+    const lastDayPrevMonth = new Date(moment().subtract(1, 'months').endOf('month').utcOffset(8).format('L'))
     console.log("firstDayPrevMonth", firstDayPrevMonth)
     console.log("lastDayPrevMonth", lastDayPrevMonth)
 
