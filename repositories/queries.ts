@@ -135,10 +135,12 @@ const getChallengeStats = async (chatId: string, fromDate?: Date, toDate?: Date)
         let myQuery = collection(challengesDocRef, "dates")
 
         if (fromDate) {
+            console.log(">>> getChallengeStats, fromDate", fromDate)
             myQuery = query(myQuery, where("createdAt", ">=", fromDate))
         }
 
         if (toDate) {
+            console.log(">>> getChallengeStats, toDate", toDate)
             myQuery = query(myQuery, where("createdAt", "<=", toDate))
         }
 
