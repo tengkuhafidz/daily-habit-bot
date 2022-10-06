@@ -331,7 +331,7 @@ To join the challenge, type /join`
     const totalDays = tzMoment().endOf('day').diff(tzMoment(undefined, currentChallenge.createdAt.toDate()).endOf('day'), "days") as number + 1;
     const statsText = `📈 <b>${prevMonthName} Stats</b> | ${currentChallenge.name}
 ${Object.entries(statsByParticipantIds).map(([participantId, participantScore]) => `
-- ${`${participantScore === highScore ? "⭐️" : ""}<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === totalDays ? "🔥" : ""}`} `).join('')}`
+- ${`<b>${participants[participantId]}</b>: ${participantScore}/${totalDays} ${participantScore === highScore ? "⭐️" : ""}`} `).join('')}`
 
     await ctx.reply(statsText, {
         parse_mode: "HTML",
