@@ -45,7 +45,7 @@ To join the challenge, type /join`
             await queries.createToday(challenge.chatId)
           }
 
-          const todayText = `🚨 <b>Reminder</b> | ${challenge.name} 🚨
+          const todayText = `🚨 <b>Reminder</b> | ${challenge.name}
           
 Here's the current progress for today:${Object.entries(challenge.participants).map(([participantId, participantName]) => `
 - ${usersDone?.[participantId] ? `<b>${(participantName as string)?.trim()}</b> ✅` : `${constructTaggedUserName(participantName as string, participantId)} 🔘`}`).join('')}
