@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/x/sift@0.6.0/mod.ts";
 // You might modify this to the correct way to import your `Bot` object.
 import { bot } from "./bot.ts";
 import { appConfig } from "./configs/appConfig.ts";
-import { queries } from "./repositories/queries.ts";
+import { DbQueries } from "./repositories/db-queries.ts";
 import { constructTaggedUserName } from "./utils/constructTaggedUserName.ts";
 import { tzMoment } from "./utils/tzMoment.ts";
 
@@ -23,7 +23,7 @@ serve({
   [`/remind/${appConfig.botApiKey}`]: async (req) => {
     try {
       const currHour = tzMoment().format("ha")
-      const toBeReminded = await queries.getChallengesToBeReminded(currHour)
+      const toBeReminded = await DbQueries.getChallengesToBeReminded(currHour)
       if (!toBeReminded) {
         return new Response();
       }
@@ -38,11 +38,11 @@ To join the challenge, type /join`
           const apiUrl = `https://api.telegram.org/bot${appConfig.botApiKey}/sendMessage?chat_id=${challenge.chatId}&text=${encodeURI(challengeExistText)}&parse_mode=HTML`
           await fetch(apiUrl)
         } else {
-          const todayRecord = await queries.getToday(challenge.chatId)
+          const todayRecord = await DbQueries.getToday(challenge.chatId)
           const usersDone = todayRecord?.participants;
 
           if (!todayRecord) {
-            await queries.createToday(challenge.chatId)
+            await DbQueries.createToday(challenge.chatId)
           }
 
           const todayText = `🚨 <b>Reminder</b> | ${challenge.name}

@@ -127,8 +127,6 @@ const getChallengesToBeReminded = async (reminderTime?: string) => {
     return toBeReminded
 }
 
-
-
 const getChallengeStats = async (chatId: string, fromDate?: Date, toDate?: Date) => {
     try {
         const challengesDocRef = doc(db, "challenges", chatId)
@@ -185,7 +183,7 @@ const removeReminderTiming = async (chatId: string) => {
     }
 }
 
-export const queries = {
+export const DbQueries = {
     getChallenge,
     saveChallenge,
     joinChallenge,
