@@ -26,8 +26,8 @@ To join the challenge, type /join`
         });
     }
 
-    const firstDayPrevMonth = new Date(moment().subtract(1, 'months').startOf('month').add(8, 'hours').format())
-    const lastDayPrevMonth = new Date(moment().subtract(1, 'months').endOf('month').add(8, 'hours').format())
+    const firstDayPrevMonth = new Date(moment().subtract(1, 'months').startOf('month').subtract(8, 'hours').format())
+    const lastDayPrevMonth = new Date(moment().subtract(1, 'months').endOf('month').subtract(8, 'hours').format())
     console.log("firstDayPrevMonth", firstDayPrevMonth)
     console.log("lastDayPrevMonth", lastDayPrevMonth)
 
