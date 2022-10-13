@@ -26,13 +26,15 @@ To join the challenge, type /join`
         });
     }
 
-    const firstDayPrevMonth = new Date(moment().subtract(1, 'months').startOf('month').utcOffset(8).format('L'))
-    const lastDayPrevMonth = new Date(moment().subtract(1, 'months').endOf('month').utcOffset(8).format('L'))
+    const firstDayPrevMonth = new Date(moment().subtract(1, 'months').startOf('month').utcOffset(8).format())
+    const lastDayPrevMonth = new Date(moment().subtract(1, 'months').endOf('month').utcOffset(8).format())
     console.log("firstDayPrevMonth", firstDayPrevMonth)
     console.log("lastDayPrevMonth", lastDayPrevMonth)
 
     const recordsPrevMonth = await DbQueries.getChallengeStats(chatId!, firstDayPrevMonth, lastDayPrevMonth)
-    console.log("recordsPrevMonth", recordsPrevMonth)
+    console.log("1st record", recordsPrevMonth?.[0])
+    console.log("last record", recordsPrevMonth?.[recordsPrevMonth?.length - 1])
+
     const participants = currentChallenge?.participants;
     const { statsByParticipantIds, highScore } = getStats(participants, recordsPrevMonth!)
 
