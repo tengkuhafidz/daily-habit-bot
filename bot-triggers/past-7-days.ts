@@ -25,7 +25,7 @@ To join the challenge, type /join`
             parse_mode: "HTML",
         });
     }
-    const recordsToDate = await DbQueries.getChallengeStats(chatId!, new Date(moment().subtract(7, 'days').startOf('day').utcOffset(8).format('L')))
+    const recordsToDate = await DbQueries.getChallengeStats(chatId!, new Date(moment().subtract(7, 'days').startOf('day').subtract(8, 'hours').format()))
 
     const participants = currentChallenge?.participants;
     const { pastDaysRecordsByParticipants } = getPastDaysRecords(participants, recordsToDate!)
